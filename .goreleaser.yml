@@ -43,21 +43,23 @@ changelog:
       - '^docs:'
       - '^test:'
       - '^chore:'
+      - '^refactor:'
+      - '^ci:'
+      - '^config:'
+  abbrev: 7
   groups:
-    - title: 'Breaking Changes'
+    - title: '⛓️‍💥 Breaking Changes'
       regexp: "^.*!:.*$"
       order: 0
-    - title: 'New Features'
+    - title: '🤘🏼 New Features'
       regexp: "^.*feat.*:+.*$"
       order: 1
-    - title: 'Bug Fixes'
+    - title: '👻 Bug Fixes'
       regexp: "^.*fix.*:+.*$"
       order: 2
-    - title: 'Performance Improvements'
-      regexp: "^.*perf.*:+.*$"
-      order: 3
-    - title: 'Other Changes'
+    - title: '👀 Other Changes'
       order: 999
+  format: '{{ .Message }}'
 
 release:
   github:
