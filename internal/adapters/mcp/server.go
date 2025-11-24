@@ -8,40 +8,10 @@ import (
 	"github.com/tzDel/orchestrAIgent/internal/application"
 )
 
-type CreateWorktreeArgs struct {
-	SessionID string `json:"sessionId" jsonschema:"required" jsonschema_description:"The unique identifier for the session"`
-}
-
-type CreateWorktreeOutput struct {
-	SessionID    string `json:"sessionId"`
-	WorktreePath string `json:"worktreePath"`
-	BranchName   string `json:"branchName"`
-	Status       string `json:"status"`
-}
-
-type RemoveSessionArgs struct {
-	SessionID string `json:"sessionId" jsonschema:"required" jsonschema_description:"Session identifier"`
-	Force     bool   `json:"force" jsonschema_description:"Skip safety checks and force removal"`
-}
-
-type RemoveSessionOutput struct {
-	SessionID          string `json:"sessionId"`
-	RemovedAt          string `json:"removedAt,omitempty"`
-	HasUnmergedChanges bool   `json:"hasUnmergedChanges"`
-	UnmergedCommits    int    `json:"unmergedCommits"`
-	UncommittedFiles   int    `json:"uncommittedFiles"`
-	Warning            string `json:"warning,omitempty"`
-}
-
-type MCPServer struct {
-	mcpServer             *mcpsdk.Server
-	createWorktreeUseCase *application.CreateWorktreeUseCase
-	removeSessionUseCase  *application.RemoveSessionUseCase
-}
-
 func NewMCPServer(
 	createWorktreeUseCase *application.CreateWorktreeUseCase,
 	removeSessionUseCase *application.RemoveSessionUseCase,
+	getSessionsUseCase *application.GetSessionsUseCase,
 ) (*MCPServer, error) {
 	impl := &mcpsdk.Implementation{
 		Name:    "orchestrAIgent",
@@ -54,6 +24,7 @@ func NewMCPServer(
 		mcpServer:             mcpServer,
 		createWorktreeUseCase: createWorktreeUseCase,
 		removeSessionUseCase:  removeSessionUseCase,
+		getSessionsUseCase:    getSessionsUseCase,
 	}
 
 	mcpsdk.AddTool(
@@ -72,6 +43,15 @@ func NewMCPServer(
 			Description: "Removes an session's worktree and branch. Checks for unmerged changes unless force=true.",
 		},
 		server.handleRemoveSession,
+	)
+
+	mcpsdk.AddTool(
+		mcpServer,
+		&mcpsdk.Tool{
+			Name:        "get_sessions",
+			Description: "Retrieves all sessions with metadata, git statistics, and current state",
+		},
+		server.handleGetSessions,
 	)
 
 	return server, nil
@@ -146,6 +126,39 @@ func (s *MCPServer) handleRemoveSession(
 	}
 
 	message := fmt.Sprintf("Successfully removed worktree for session '%s'", response.SessionID)
+	return newSuccessResult(message), output, nil
+}
+
+func (s *MCPServer) handleGetSessions(
+	ctx context.Context,
+	req *mcpsdk.CallToolRequest,
+	args GetSessionsArgs,
+) (*mcpsdk.CallToolResult, any, error) {
+	request := application.GetSessionsRequest{}
+
+	response, err := s.getSessionsUseCase.Execute(ctx, request)
+	if err != nil {
+		message := fmt.Sprintf("Failed to get sessions: %v", err)
+		return newErrorResult(message), nil, err
+	}
+
+	sessionOutputs := make([]SessionOutput, 0, len(response.Sessions))
+	for _, session := range response.Sessions {
+		sessionOutputs = append(sessionOutputs, SessionOutput{
+			SessionID:    session.SessionID,
+			WorktreePath: session.WorktreePath,
+			BranchName:   session.BranchName,
+			Status:       session.Status,
+			LinesAdded:   session.LinesAdded,
+			LinesRemoved: session.LinesRemoved,
+		})
+	}
+
+	output := GetSessionsOutput{
+		Sessions: sessionOutputs,
+	}
+
+	message := fmt.Sprintf("Found %d session(s)", len(response.Sessions))
 	return newSuccessResult(message), output, nil
 }
 

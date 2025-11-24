@@ -33,8 +33,8 @@ func TestCreateWorktreeUseCase_Execute_Success(t *testing.T) {
 		t.Errorf("BranchName = %q, want %q", response.BranchName, "session-test-session")
 	}
 
-	if response.Status != "created" {
-		t.Errorf("Status = %q, want %q", response.Status, "created")
+	if response.Status != "open" {
+		t.Errorf("Status = %q, want %q", response.Status, "open")
 	}
 }
 
@@ -331,7 +331,7 @@ func TestCreateWorktreeUseCase_BuildResponse_ReturnsCorrectResponse(t *testing.T
 	if response.BranchName != "session-test-session" {
 		t.Errorf("buildResponse() BranchName = %q, want %q", response.BranchName, "session-test-session")
 	}
-	if response.Status != "created" {
-		t.Errorf("buildResponse() Status = %q, want %q", response.Status, "created")
+	if response.Status != "open" {
+		t.Errorf("buildResponse() Status = %q, want %q", response.Status, "open")
 	}
 }

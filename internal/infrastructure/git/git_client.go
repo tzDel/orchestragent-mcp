@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
+
+	"github.com/tzDel/orchestrAIgent/internal/domain"
 )
 
 type GitClient struct {
@@ -119,4 +121,50 @@ func (gitClient *GitClient) DeleteBranch(ctx context.Context, branchName string,
 	}
 
 	return nil
+}
+
+func (gitClient *GitClient) GetDiffStats(ctx context.Context, worktreePath string, baseBranch string) (*domain.GitDiffStats, error) {
+	commandOutput, err := gitClient.executeGitCommandWithOutput(ctx, "-C", worktreePath, "diff", "--numstat", baseBranch)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get diff stats: %w", err)
+	}
+
+	stats := parseDiffNumstatOutput(string(commandOutput))
+	return stats, nil
+}
+
+func parseDiffNumstatOutput(output string) *domain.GitDiffStats {
+	stats := &domain.GitDiffStats{
+		LinesAdded:   0,
+		LinesRemoved: 0,
+	}
+
+	outputString := strings.TrimSpace(output)
+	if outputString == "" {
+		return stats
+	}
+
+	lines := strings.Split(outputString, "\n")
+	for _, line := range lines {
+		fields := strings.Fields(line)
+		if len(fields) < 2 {
+			continue
+		}
+
+		added := 0
+		removed := 0
+
+		if fields[0] != "-" {
+			fmt.Sscanf(fields[0], "%d", &added)
+		}
+
+		if fields[1] != "-" {
+			fmt.Sscanf(fields[1], "%d", &removed)
+		}
+
+		stats.LinesAdded += added
+		stats.LinesRemoved += removed
+	}
+
+	return stats
 }

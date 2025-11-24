@@ -8,10 +8,9 @@ import (
 type SessionStatus string
 
 const (
-	StatusCreated SessionStatus = "created"
-	StatusMerged  SessionStatus = "merged"
-	StatusFailed  SessionStatus = "failed"
-	StatusRemoved SessionStatus = "removed"
+	StatusOpen     SessionStatus = "open"
+	StatusReviewed SessionStatus = "reviewed"
+	StatusMerged   SessionStatus = "merged"
 )
 
 type Session struct {
@@ -31,7 +30,7 @@ func NewSession(sessionID SessionID, worktreePath string) (*Session, error) {
 	now := time.Now()
 	return &Session{
 		id:           sessionID,
-		status:       StatusCreated,
+		status:       StatusOpen,
 		worktreePath: worktreePath,
 		branchName:   sessionID.BranchName(),
 		createdAt:    now,
@@ -55,17 +54,12 @@ func (session *Session) BranchName() string {
 	return session.branchName
 }
 
+func (session *Session) MarkReviewed() {
+	session.status = StatusReviewed
+	session.updatedAt = time.Now()
+}
+
 func (session *Session) MarkMerged() {
 	session.status = StatusMerged
-	session.updatedAt = time.Now()
-}
-
-func (session *Session) MarkFailed() {
-	session.status = StatusFailed
-	session.updatedAt = time.Now()
-}
-
-func (session *Session) MarkRemoved() {
-	session.status = StatusRemoved
 	session.updatedAt = time.Now()
 }

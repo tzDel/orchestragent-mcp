@@ -39,10 +39,34 @@ func (repository *InMemorySessionRepository) FindByID(ctx context.Context, sessi
 	return session, nil
 }
 
+func (repository *InMemorySessionRepository) FindAll(ctx context.Context) ([]*domain.Session, error) {
+	repository.mutex.RLock()
+	defer repository.mutex.RUnlock()
+
+	sessions := make([]*domain.Session, 0, len(repository.sessions))
+	for _, session := range repository.sessions {
+		sessions = append(sessions, session)
+	}
+
+	return sessions, nil
+}
+
 func (repository *InMemorySessionRepository) Exists(ctx context.Context, sessionID domain.SessionID) (bool, error) {
 	repository.mutex.RLock()
 	defer repository.mutex.RUnlock()
 
 	_, exists := repository.sessions[sessionID.String()]
 	return exists, nil
+}
+
+func (repository *InMemorySessionRepository) Delete(ctx context.Context, sessionID domain.SessionID) error {
+	repository.mutex.Lock()
+	defer repository.mutex.Unlock()
+
+	if _, exists := repository.sessions[sessionID.String()]; !exists {
+		return fmt.Errorf("session not found: %s", sessionID.String())
+	}
+
+	delete(repository.sessions, sessionID.String())
+	return nil
 }

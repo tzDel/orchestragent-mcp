@@ -79,3 +79,59 @@ func TestInMemoryRepository_Exists(t *testing.T) {
 		t.Error("Exists() returned false for existing session")
 	}
 }
+
+func TestInMemoryRepository_FindAll_EmptyRepository(t *testing.T) {
+	// arrange
+	repository := NewInMemorySessionRepository()
+	ctx := context.Background()
+
+	// act
+	sessions, err := repository.FindAll(ctx)
+
+	// assert
+	if err != nil {
+		t.Fatalf("FindAll() error: %v", err)
+	}
+	if len(sessions) != 0 {
+		t.Errorf("FindAll() returned %d sessions, want 0", len(sessions))
+	}
+}
+
+func TestInMemoryRepository_FindAll_MultipleSessions(t *testing.T) {
+	// arrange
+	repository := NewInMemorySessionRepository()
+	ctx := context.Background()
+
+	sessionID1, _ := domain.NewSessionID("session-one")
+	session1, _ := domain.NewSession(sessionID1, "/path/one")
+
+	sessionID2, _ := domain.NewSessionID("session-two")
+	session2, _ := domain.NewSession(sessionID2, "/path/two")
+
+	sessionID3, _ := domain.NewSessionID("session-three")
+	session3, _ := domain.NewSession(sessionID3, "/path/three")
+
+	repository.Save(ctx, session1)
+	repository.Save(ctx, session2)
+	repository.Save(ctx, session3)
+
+	// act
+	sessions, err := repository.FindAll(ctx)
+
+	// assert
+	if err != nil {
+		t.Fatalf("FindAll() error: %v", err)
+	}
+	if len(sessions) != 3 {
+		t.Errorf("FindAll() returned %d sessions, want 3", len(sessions))
+	}
+
+	sessionIDs := make(map[string]bool)
+	for _, session := range sessions {
+		sessionIDs[session.ID().String()] = true
+	}
+
+	if !sessionIDs["session-one"] || !sessionIDs["session-two"] || !sessionIDs["session-three"] {
+		t.Error("FindAll() did not return all expected sessions")
+	}
+}

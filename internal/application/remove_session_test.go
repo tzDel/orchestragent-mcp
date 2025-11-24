@@ -25,29 +25,6 @@ func TestRemoveSessionUseCase_Execute_SessionNotFound(t *testing.T) {
 	}
 }
 
-func TestRemoveSessionUseCase_Execute_SessionAlreadyRemoved(t *testing.T) {
-	// arrange
-	gitOperations := &mockGitOperations{}
-	sessionRepository := newMockSessionRepository()
-	removeSessionUseCase := NewRemoveSessionUseCase(gitOperations, sessionRepository, "main")
-
-	sessionID, _ := domain.NewSessionID("test-session")
-	session, _ := domain.NewSession(sessionID, "/path")
-	session.MarkRemoved()
-	sessionRepository.Save(context.Background(), session)
-
-	request := RemoveSessionRequest{SessionID: "test-session", Force: false}
-	ctx := context.Background()
-
-	// act
-	_, err := removeSessionUseCase.Execute(ctx, request)
-
-	// assert
-	if err == nil {
-		t.Error("Execute() expected error for already removed session")
-	}
-}
-
 func TestRemoveSessionUseCase_Execute_UncommittedChangesWithoutForce(t *testing.T) {
 	// arrange
 	gitOperations := &mockGitOperations{
@@ -161,9 +138,9 @@ func TestRemoveSessionUseCase_Execute_CleanWorktree(t *testing.T) {
 		t.Error("Execute() expected RemovedAt to be set")
 	}
 
-	savedSession, _ := sessionRepository.FindByID(ctx, sessionID)
-	if savedSession.Status() != domain.StatusRemoved {
-		t.Errorf("Execute() session status = %v, want %v", savedSession.Status(), domain.StatusRemoved)
+	_, err = sessionRepository.FindByID(ctx, sessionID)
+	if err == nil {
+		t.Error("Execute() expected session to be deleted from repository")
 	}
 }
 
@@ -201,9 +178,9 @@ func TestRemoveSessionUseCase_Execute_ForceRemoveWithChanges(t *testing.T) {
 		t.Error("Execute() expected RemovedAt to be set")
 	}
 
-	savedSession, _ := sessionRepository.FindByID(ctx, sessionID)
-	if savedSession.Status() != domain.StatusRemoved {
-		t.Errorf("Execute() session status = %v, want %v", savedSession.Status(), domain.StatusRemoved)
+	_, err = sessionRepository.FindByID(ctx, sessionID)
+	if err == nil {
+		t.Error("Execute() expected session to be deleted from repository")
 	}
 }
 
@@ -290,8 +267,8 @@ func TestRemoveSessionUseCase_Execute_BranchDeleteFailsContinues(t *testing.T) {
 		t.Error("Execute() expected RemovedAt to be set even if branch delete fails")
 	}
 
-	savedSession, _ := sessionRepository.FindByID(ctx, sessionID)
-	if savedSession.Status() != domain.StatusRemoved {
-		t.Errorf("Execute() session status = %v, want %v", savedSession.Status(), domain.StatusRemoved)
+	_, err = sessionRepository.FindByID(ctx, sessionID)
+	if err == nil {
+		t.Error("Execute() expected session to be deleted from repository")
 	}
 }

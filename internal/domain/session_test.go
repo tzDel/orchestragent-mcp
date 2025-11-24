@@ -19,8 +19,8 @@ func TestNewSession(t *testing.T) {
 		t.Errorf("ID() = %q, want %q", session.ID().String(), "test-session")
 	}
 
-	if session.Status() != StatusCreated {
-		t.Errorf("Status() = %q, want %q", session.Status(), StatusCreated)
+	if session.Status() != StatusOpen {
+		t.Errorf("Status() = %q, want %q", session.Status(), StatusOpen)
 	}
 
 	if session.WorktreePath() != worktreePath {
@@ -45,6 +45,20 @@ func TestNewSession_InvalidWorktreePath(t *testing.T) {
 	}
 }
 
+func TestSession_MarkReviewed(t *testing.T) {
+	// arrange
+	sessionID, _ := NewSessionID("test-session")
+	session, _ := NewSession(sessionID, "/path")
+
+	// act
+	session.MarkReviewed()
+
+	// assert
+	if session.Status() != StatusReviewed {
+		t.Errorf("Status after MarkReviewed() = %q, want %q", session.Status(), StatusReviewed)
+	}
+}
+
 func TestSession_MarkMerged(t *testing.T) {
 	// arrange
 	sessionID, _ := NewSessionID("test-session")
@@ -56,33 +70,5 @@ func TestSession_MarkMerged(t *testing.T) {
 	// assert
 	if session.Status() != StatusMerged {
 		t.Errorf("Status after MarkMerged() = %q, want %q", session.Status(), StatusMerged)
-	}
-}
-
-func TestSession_MarkFailed(t *testing.T) {
-	// arrange
-	sessionID, _ := NewSessionID("test-session")
-	session, _ := NewSession(sessionID, "/path")
-
-	// act
-	session.MarkFailed()
-
-	// assert
-	if session.Status() != StatusFailed {
-		t.Errorf("Status after MarkFailed() = %q, want %q", session.Status(), StatusFailed)
-	}
-}
-
-func TestSession_MarkRemoved(t *testing.T) {
-	// arrange
-	sessionID, _ := NewSessionID("test-session")
-	session, _ := NewSession(sessionID, "/path")
-
-	// act
-	session.MarkRemoved()
-
-	// assert
-	if session.Status() != StatusRemoved {
-		t.Errorf("Status after MarkRemoved() = %q, want %q", session.Status(), StatusRemoved)
 	}
 }

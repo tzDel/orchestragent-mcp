@@ -9,10 +9,13 @@ type GitOperations interface {
 	HasUncommittedChanges(ctx context.Context, worktreePath string) (bool, int, error)
 	HasUnpushedCommits(ctx context.Context, baseBranch string, sessionBranch string) (int, error)
 	DeleteBranch(ctx context.Context, branchName string, force bool) error
+	GetDiffStats(ctx context.Context, worktreePath string, baseBranch string) (*GitDiffStats, error)
 }
 
 type SessionRepository interface {
 	Save(ctx context.Context, session *Session) error
 	FindByID(ctx context.Context, sessionID SessionID) (*Session, error)
+	FindAll(ctx context.Context) ([]*Session, error)
 	Exists(ctx context.Context, sessionID SessionID) (bool, error)
+	Delete(ctx context.Context, sessionID SessionID) error
 }

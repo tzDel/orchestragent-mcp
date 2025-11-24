@@ -52,9 +52,6 @@ func (removeSessionUseCase *RemoveSessionUseCase) Execute(
 	if err != nil {
 		return nil, err
 	}
-	if err := removeSessionUseCase.verifySessionNotRemoved(session); err != nil {
-		return nil, err
-	}
 
 	response := &RemoveSessionResponse{
 		SessionID: request.SessionID,
@@ -74,8 +71,8 @@ func (removeSessionUseCase *RemoveSessionUseCase) Execute(
 		return nil, err
 	}
 	removeSessionUseCase.deleteBranchIfPossible(ctx, session)
-	if err := removeSessionUseCase.markSessionRemoved(ctx, session); err != nil {
-		return nil, err
+	if err := removeSessionUseCase.sessionRepository.Delete(ctx, session.ID()); err != nil {
+		return nil, fmt.Errorf("failed to delete session: %w", err)
 	}
 
 	response.RemovedAt = time.Now()
@@ -97,13 +94,6 @@ func (removeSessionUseCase *RemoveSessionUseCase) fetchSession(ctx context.Conte
 		return nil, fmt.Errorf("session not found: %w", err)
 	}
 	return session, nil
-}
-
-func (removeSessionUseCase *RemoveSessionUseCase) verifySessionNotRemoved(session *domain.Session) error {
-	if session.Status() == domain.StatusRemoved {
-		return fmt.Errorf("session already removed")
-	}
-	return nil
 }
 
 func (removeSessionUseCase *RemoveSessionUseCase) checkForUnmergedWork(
@@ -149,12 +139,4 @@ func (removeSessionUseCase *RemoveSessionUseCase) removeSession(ctx context.Cont
 
 func (removeSessionUseCase *RemoveSessionUseCase) deleteBranchIfPossible(ctx context.Context, session *domain.Session) {
 	removeSessionUseCase.gitOperations.DeleteBranch(ctx, session.BranchName(), true)
-}
-
-func (removeSessionUseCase *RemoveSessionUseCase) markSessionRemoved(ctx context.Context, session *domain.Session) error {
-	session.MarkRemoved()
-	if err := removeSessionUseCase.sessionRepository.Save(ctx, session); err != nil {
-		return fmt.Errorf("failed to update session: %w", err)
-	}
-	return nil
 }

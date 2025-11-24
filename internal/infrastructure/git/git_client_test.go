@@ -353,3 +353,85 @@ func TestGitClient_DeleteBranch_ForceDelete(t *testing.T) {
 		t.Error("Branch still exists after force deletion")
 	}
 }
+
+func TestGitClient_GetDiffStats_NoDifference(t *testing.T) {
+	// arrange
+	setup := setupTestRepoWithWorktree(t)
+	defer setup.cleanup()
+
+	// act
+	stats, err := setup.gitClient.GetDiffStats(setup.ctx, setup.worktreePath, "master")
+
+	// assert
+	if err != nil {
+		t.Fatalf("GetDiffStats() error: %v", err)
+	}
+	if stats.LinesAdded != 0 {
+		t.Errorf("GetDiffStats() LinesAdded = %d, want 0", stats.LinesAdded)
+	}
+	if stats.LinesRemoved != 0 {
+		t.Errorf("GetDiffStats() LinesRemoved = %d, want 0", stats.LinesRemoved)
+	}
+}
+
+func TestGitClient_GetDiffStats_WithChanges(t *testing.T) {
+	// arrange
+	setup := setupTestRepoWithWorktree(t)
+	defer setup.cleanup()
+
+	newFilePath := filepath.Join(setup.worktreePath, "new-file.txt")
+	os.WriteFile(newFilePath, []byte("line 1\nline 2\nline 3\n"), 0644)
+
+	gitAddCommand := exec.Command("git", "add", "new-file.txt")
+	gitAddCommand.Dir = setup.worktreePath
+	gitAddCommand.Run()
+
+	gitCommitCommand := exec.Command("git", "commit", "-m", "Add new file")
+	gitCommitCommand.Dir = setup.worktreePath
+	gitCommitCommand.Run()
+
+	// act
+	stats, err := setup.gitClient.GetDiffStats(setup.ctx, setup.worktreePath, "master")
+
+	// assert
+	if err != nil {
+		t.Fatalf("GetDiffStats() error: %v", err)
+	}
+	if stats.LinesAdded != 3 {
+		t.Errorf("GetDiffStats() LinesAdded = %d, want 3", stats.LinesAdded)
+	}
+	if stats.LinesRemoved != 0 {
+		t.Errorf("GetDiffStats() LinesRemoved = %d, want 0", stats.LinesRemoved)
+	}
+}
+
+func TestGitClient_GetDiffStats_WithModifications(t *testing.T) {
+	// arrange
+	setup := setupTestRepoWithWorktree(t)
+	defer setup.cleanup()
+
+	readmePath := filepath.Join(setup.worktreePath, "README.md")
+	os.WriteFile(readmePath, []byte("# Modified Header\nNew line 1\nNew line 2\n"), 0644)
+
+	gitAddCommand := exec.Command("git", "add", "README.md")
+	gitAddCommand.Dir = setup.worktreePath
+	gitAddCommand.Run()
+
+	gitCommitCommand := exec.Command("git", "commit", "-m", "Modify README")
+	gitCommitCommand.Dir = setup.worktreePath
+	gitCommitCommand.Run()
+
+	// act
+	stats, err := setup.gitClient.GetDiffStats(setup.ctx, setup.worktreePath, "master")
+
+	// assert
+	if err != nil {
+		t.Fatalf("GetDiffStats() error: %v", err)
+	}
+	if stats.LinesAdded == 0 {
+		t.Error("GetDiffStats() LinesAdded should be > 0 for modifications")
+	}
+	if stats.LinesRemoved == 0 {
+		t.Error("GetDiffStats() LinesRemoved should be > 0 for modifications")
+	}
+}
