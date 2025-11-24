@@ -17,10 +17,10 @@ deps:
 	go mod tidy
 
 build:
-	go build -o bin/orchestrAIgent ./cmd/server
+	go build -o bin/orchestragent-mcp ./cmd/server
 
 build-exe:
-	go build -o bin/orchestrAIgent.exe ./cmd/server
+	go build -o bin/orchestragent-mcp.exe ./cmd/server
 
 test:
 	go test -v ./...

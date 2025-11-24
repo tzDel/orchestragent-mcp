@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/tzDel/orchestrAIgent/internal/domain"
+	"github.com/tzDel/orchestragent-mcp/internal/domain"
 )
 
 type InMemorySessionRepository struct {

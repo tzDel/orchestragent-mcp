@@ -5,7 +5,7 @@ import (
 	"errors"
 	"path/filepath"
 
-	"github.com/tzDel/orchestrAIgent/internal/domain"
+	"github.com/tzDel/orchestragent-mcp/internal/domain"
 )
 
 type mockGitOperations struct {

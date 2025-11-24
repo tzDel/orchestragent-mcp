@@ -1,4 +1,4 @@
-# IntelliJ Plugin Architecture for orchestrAIgent
+# IntelliJ Plugin Architecture for orchestragent
 
 **Version:** 1.0
 **Target Platform:** IntelliJ IDEA (2023.1+), compatible with all JetBrains IDEs
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-This document outlines the architecture for an IntelliJ IDEA plugin that provides UI and workflow management for the orchestrAIgent MCP server. The plugin enables developers to manage isolated AI coding agent sessions directly from the IDE, providing visual session management, diff visualization, and merge workflows while delegating agent lifecycle and git operations to the MCP server.
+This document outlines the architecture for an IntelliJ IDEA plugin that provides UI and workflow management for the orchestragent MCP server. The plugin enables developers to manage isolated AI coding agent sessions directly from the IDE, providing visual session management, diff visualization, and merge workflows while delegating agent lifecycle and git operations to the MCP server.
 
 **Key Capabilities:**
 - Visual session management dashboard within IDE
@@ -44,7 +44,7 @@ This document outlines the architecture for an IntelliJ IDEA plugin that provide
                               │ MCP Protocol (stdio/HTTP)
                               │
 ┌─────────────────────────────▼─────────────────────────────────┐
-│            orchestrAIgent MCP Server (Go Binary)              │
+│            orchestragent MCP Server (Go Binary)              │
 ├───────────────────────────────────────────────────────────────┤
 │  • Worktree creation/deletion                                 │
 │  • Git branch management                                      │
@@ -60,8 +60,8 @@ This document outlines the architecture for an IntelliJ IDEA plugin that provide
 ├───────────────────────────────────────────────────────────────┤
 │  • Main branch (base)                                         │
 │  • .worktrees/session-* (isolated worktrees)                  │
-│  • orchestrAIgent-* branches (session branches)               │
-│  • .orchestrAIgent.db (session persistence)                   │
+│  • orchestragent-* branches (session branches)               │
+│  • .orchestragent.db (session persistence)                   │
 └───────────────────────────────────────────────────────────────┘
 ```
 
@@ -198,7 +198,7 @@ User Action: Click session in tool window
     │
     ├─→ DiffService: Parse git statistics (linesAdded, linesRemoved)
     │
-    ├─→ Git4Idea API: Load branch diff (main...orchestrAIgent-{sessionId})
+    ├─→ Git4Idea API: Load branch diff (main...orchestragent-{sessionId})
     │
     └─→ UI: Display session details panel
         ├─ Session metadata (ID, branch, worktree path)
@@ -214,7 +214,7 @@ User Action: "Merge Session"
     │
     ├─→ UI: Show merge confirmation dialog
     │   ├─ Display: uncommitted files, unpushed commits
-    │   └─ Warning: "This will merge orchestrAIgent-X into main"
+    │   └─ Warning: "This will merge orchestragent-X into main"
     │
     ├─→ User confirms
     │
@@ -314,27 +314,27 @@ enum class SessionStatus {
 
 ```
 ┌────────────────────────────────────────────────────────────┐
-│  orchestrAIgent Sessions                    [+] [⟳] [⚙]   │
+│  orchestragent Sessions                    [+] [⟳] [⚙]   │
 ├────────────────────────────────────────────────────────────┤
 │  Sessions (3)                                              │
 │  ┌──────────────────────────────────────────────────────┐ │
 │  │ ● copilot-feature-auth          +245 -18    [View]   │ │
-│  │   orchestrAIgent-copilot-feature-auth                │ │
+│  │   orchestragent-copilot-feature-auth                │ │
 │  │   .worktrees/session-copilot-feature-auth            │ │
 │  ├──────────────────────────────────────────────────────┤ │
 │  │ ● claude-refactor-db            +89 -42     [View]   │ │
-│  │   orchestrAIgent-claude-refactor-db                  │ │
+│  │   orchestragent-claude-refactor-db                  │ │
 │  │   .worktrees/session-claude-refactor-db              │ │
 │  ├──────────────────────────────────────────────────────┤ │
 │  │ ● gemini-docs-update            +12 -3      [View]   │ │
-│  │   orchestrAIgent-gemini-docs-update                  │ │
+│  │   orchestragent-gemini-docs-update                  │ │
 │  │   .worktrees/session-gemini-docs-update              │ │
 │  └──────────────────────────────────────────────────────┘ │
 ├────────────────────────────────────────────────────────────┤
 │  Details: copilot-feature-auth                             │
 │  ┌──────────────────────────────────────────────────────┐ │
 │  │  Status: Open                                         │ │
-│  │  Branch: orchestrAIgent-copilot-feature-auth         │ │
+│  │  Branch: orchestragent-copilot-feature-auth         │ │
 │  │  Path: .worktrees/session-copilot-feature-auth       │ │
 │  │  Changes: +245 insertions, -18 deletions             │ │
 │  │                                                       │ │
@@ -378,11 +378,11 @@ enum class SessionStatus {
 ### Plugin Settings UI
 
 ```
-Settings → Tools → orchestrAIgent
+Settings → Tools → orchestragent
 ┌────────────────────────────────────────────────────────────┐
 │  MCP Server Configuration                                  │
 │  ┌──────────────────────────────────────────────────────┐ │
-│  │  Binary Path: [/usr/local/bin/orchestrAIgent] [...]  │ │
+│  │  Binary Path: [/usr/local/bin/orchestragent] [...]  │ │
 │  │  Repository:  [/path/to/repo]                 [...]  │ │
 │  │  Auto-start:  ☑ Start MCP server automatically       │ │
 │  │  Refresh:     [30] seconds                           │ │
@@ -412,7 +412,7 @@ Settings → Tools → orchestrAIgent
 ```kotlin
 @State(
     name = "OrchestrAIgentSettings",
-    storages = [Storage("orchestrAIgent.xml")]
+    storages = [Storage("orchestragent.xml")]
 )
 data class PluginSettings(
     var mcpServerPath: String = "",
@@ -457,7 +457,7 @@ data class PluginSettings(
     }],
     "sessionId": "copilot-feature-auth",
     "worktreePath": ".worktrees/session-copilot-feature-auth",
-    "branchName": "orchestrAIgent-copilot-feature-auth",
+    "branchName": "orchestragent-copilot-feature-auth",
     "status": "open"
   }
 }
@@ -480,7 +480,7 @@ val diffProvider = GitDiffProvider(project)
 val changes = diffProvider.compareWithBranch(
     gitRepository,
     "main",
-    "orchestrAIgent-${sessionId}"
+    "orchestragent-${sessionId}"
 )
 
 // Open IntelliJ's diff viewer
@@ -561,7 +561,7 @@ when (val result = mcpClient.callTool("create_worktree", args)) {
 
 ### Plugin Packaging
 
-**Build Output:** `orchestrAIgent-intellij-plugin-1.0.0.zip`
+**Build Output:** `orchestragent-intellij-plugin-1.0.0.zip`
 
 **Contents:**
 - Plugin JAR with dependencies
@@ -597,16 +597,16 @@ when (val result = mcpClient.callTool("create_worktree", args)) {
 
 **Settings UI for Hybrid Approach:**
 ```
-Settings → Tools → orchestrAIgent → MCP Server Configuration
+Settings → Tools → orchestragent → MCP Server Configuration
 ┌────────────────────────────────────────────────────────────┐
 │  Server Source                                             │
 │  ┌──────────────────────────────────────────────────────┐ │
 │  │  ● Use bundled server (recommended)                  │ │
 │  │    Version: 0.1.0 (included with plugin)             │ │
-│  │    Path: ~/.jetbrains/plugins/orchestrAIgent/bin     │ │
+│  │    Path: ~/.jetbrains/plugins/orchestragent/bin     │ │
 │  │                                                       │ │
 │  │  ○ Use custom server binary                          │ │
-│  │    Path: [/usr/local/bin/orchestrAIgent]     [...]   │ │
+│  │    Path: [/usr/local/bin/orchestragent]     [...]   │ │
 │  └──────────────────────────────────────────────────────┘ │
 │                                                            │
 │  [Test Connection]  Status: ✓ Connected (v0.1.0)          │
@@ -614,7 +614,7 @@ Settings → Tools → orchestrAIgent → MCP Server Configuration
 ```
 
 **Implementation Notes:**
-- Bundled binaries stored in plugin resources: `resources/bin/{platform}/orchestrAIgent`
+- Bundled binaries stored in plugin resources: `resources/bin/{platform}/orchestragent`
 - Platforms: `windows-x64`, `macos-arm64`, `macos-x64`, `linux-x64`
 - First run: Detect platform → Extract binary → Set executable permissions
 - Custom binary: Validate path exists → Test connection → Save to settings
@@ -746,7 +746,7 @@ class SessionToolWindowTest {
         // arrange
         val project = projectRule.project
         val toolWindow = ToolWindowManager.getInstance(project)
-            .getToolWindow("orchestrAIgent")
+            .getToolWindow("orchestragent")
 
         // act
         val content = toolWindow?.contentManager?.getContent(0)
@@ -800,10 +800,10 @@ class SessionToolWindowTest {
 - [IntelliJ Platform Plugin SDK](https://plugins.jetbrains.com/docs/intellij/welcome.html)
 - [Model Context Protocol Specification](https://modelcontextprotocol.io/)
 - [Git Worktree Documentation](https://git-scm.com/docs/git-worktree)
-- [orchestrAIgent GitHub Repository](https://github.com/tzDel/orchestrAIgent)
+- [orchestragent GitHub Repository](https://github.com/tzDel/orchestragent)
 
 ### Related Documents
 
-- [orchestrAIgent Architecture](../architecture.md) - MCP server design
-- [orchestrAIgent Concept](../concept.md) - Project vision and roadmap
+- [orchestragent Architecture](../architecture.md) - MCP server design
+- [orchestragent Concept](../concept.md) - Project vision and roadmap
 - [MCP Protocol Guide](https://modelcontextprotocol.io/docs/concepts/architecture) - Protocol specification

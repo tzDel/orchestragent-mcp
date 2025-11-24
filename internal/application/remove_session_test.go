@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/tzDel/orchestrAIgent/internal/domain"
+	"github.com/tzDel/orchestragent-mcp/internal/domain"
 )
 
 func TestRemoveSessionUseCase_Execute_SessionNotFound(t *testing.T) {

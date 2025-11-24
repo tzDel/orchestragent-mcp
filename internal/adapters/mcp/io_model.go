@@ -2,7 +2,7 @@ package mcp
 
 import (
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
-	"github.com/tzDel/orchestrAIgent/internal/application"
+	"github.com/tzDel/orchestragent-mcp/internal/application"
 )
 
 type CreateWorktreeArgs struct {

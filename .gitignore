@@ -4,7 +4,7 @@
 *.dll
 *.so
 *.dylib
-orchestrAIgent
+orchestragent-mcp
 /server
 
 # Test binary
@@ -37,6 +37,6 @@ config.yaml
 /.mcp.json
 
 # SQLite database
-.orchestrAIgent.db
-.orchestrAIgent.db-shm
-.orchestrAIgent.db-wal
+.orchestragent-mcp.db
+.orchestragent-mcp.db-shm
+.orchestragent-mcp.db-wal

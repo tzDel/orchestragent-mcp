@@ -66,8 +66,8 @@ graph LR
 **MVP (Current - Session Management):**
 1. Client calls `create_worktree(sessionId)` → Server creates worktree + branch
 2. Developer/agent works in isolated worktree manually
-3. Developer reviews: `cd .worktrees/orchestrAIgent-{sessionId} && git diff`
-4. Developer merges manually: `git merge orchestrAIgent-{sessionId}`
+3. Developer reviews: `cd .worktrees/orchestragent-{sessionId} && git diff`
+4. Developer merges manually: `git merge orchestragent-{sessionId}`
 5. Cleanup: `remove_session(sessionId, force=false)`
 
 **Future (Full Agent Orchestration):**
@@ -166,7 +166,7 @@ Infrastructure (GitClient, SQLiteRepository, ProcessManager)
 ### Directory Structure
 
 ```
-orchestrAIgent/
+orchestragent/
 ├── cmd/
 │   └── server/main.go                   # MCP server entrypoint
 ├── internal/

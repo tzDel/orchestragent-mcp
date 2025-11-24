@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/tzDel/orchestrAIgent/internal/domain"
+	"github.com/tzDel/orchestragent-mcp/internal/domain"
 )
 
 func TestGetSessionsUseCase_NoSessions(t *testing.T) {

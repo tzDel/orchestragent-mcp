@@ -1,4 +1,4 @@
-module github.com/tzDel/orchestrAIgent
+module github.com/tzDel/orchestragent-mcp
 
 go 1.24.0
 

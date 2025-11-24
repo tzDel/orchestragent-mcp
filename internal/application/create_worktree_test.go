@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/tzDel/orchestrAIgent/internal/domain"
+	"github.com/tzDel/orchestragent-mcp/internal/domain"
 )
 
 func TestCreateWorktreeUseCase_Execute_Success(t *testing.T) {

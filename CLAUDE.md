@@ -1,4 +1,4 @@
-# orchestrAIgent - AI Agent Instructions
+# orchestragent-mcp - AI Agent Instructions
 
 **Service:** MCP Server (Model Context Protocol) <br>
 **Capabilities:** Git worktree isolation, agent lifecycle management, test execution, conflict-free merging <br>
@@ -36,7 +36,7 @@ This is an MCP (Model Context Protocol) server that manages isolated git worktre
 **Your workspace is the active working directory. Do not leave it.**
 
 - Inspect `<env>` to determine your working directory and the current branch
-- If you are in a worktree (branch: `orchestrAIgent/*`): edit all files here
+- If you are in a worktree (branch: `orchestragent-mcp/*`): edit all files here
 - If you are in the main repository (branch: `main`): make changes here directly
 - Do NOT infer or rely on parent paths from the directory structure
 - Do NOT switch directories with `cd` to other locations unless explicitly required
@@ -106,7 +106,7 @@ cmd/
 
 ## Key Design Decisions
 
-1. **SQLite Persistence**: Session data persisted in SQLite database (`.orchestrAIgent.db`); state survives server restarts
+1. **SQLite Persistence**: Session data persisted in SQLite database (`.orchestragent-mcp.db`); state survives server restarts
 2. **Single Repository**: One configured repository per server instance
 3. **Local Merges**: Merges stay local; manual `git push` required to sync with remote
 4. **Simple Status Model**: Three session status values (`open`, `reviewed`, `merged`)
@@ -255,7 +255,7 @@ go test -v ./...
 go test -cover ./...
 
 # Build the server
-go build -o bin/orchestrAIgent ./cmd/server
+go build -o bin/orchestragent-mcp ./cmd/server
 ```
 
 more commands can be found in [Makefile](Makefile)

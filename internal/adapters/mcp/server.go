@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	mcpsdk "github.com/modelcontextprotocol/go-sdk/mcp"
-	"github.com/tzDel/orchestrAIgent/internal/application"
+	"github.com/tzDel/orchestragent-mcp/internal/application"
 )
 
 func NewMCPServer(
@@ -14,7 +14,7 @@ func NewMCPServer(
 	getSessionsUseCase *application.GetSessionsUseCase,
 ) (*MCPServer, error) {
 	impl := &mcpsdk.Implementation{
-		Name:    "orchestrAIgent",
+		Name:    "orchestragent-mcp",
 		Version: "0.1.0",
 	}
 

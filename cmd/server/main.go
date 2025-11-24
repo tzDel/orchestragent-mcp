@@ -7,10 +7,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/tzDel/orchestrAIgent/internal/adapters/mcp"
-	"github.com/tzDel/orchestrAIgent/internal/application"
-	"github.com/tzDel/orchestrAIgent/internal/infrastructure/git"
-	"github.com/tzDel/orchestrAIgent/internal/infrastructure/persistence"
+	"github.com/tzDel/orchestragent-mcp/internal/adapters/mcp"
+	"github.com/tzDel/orchestragent-mcp/internal/application"
+	"github.com/tzDel/orchestragent-mcp/internal/infrastructure/git"
+	"github.com/tzDel/orchestragent-mcp/internal/infrastructure/persistence"
 )
 
 func main() {
@@ -24,7 +24,7 @@ func main() {
 
 func parseFlags() (string, string) {
 	repositoryPath := flag.String("repo", "", "path to git repository (defaults to current directory)")
-	databasePath := flag.String("db", ".orchestrAIgent.db", "path to SQLite database (defaults to .orchestrAIgent.db in repository)")
+	databasePath := flag.String("db", ".orchestragent-mcp.db", "path to SQLite database (defaults to .orchestragent-mcp.db in repository)")
 	flag.Parse()
 
 	repoPath := *repositoryPath

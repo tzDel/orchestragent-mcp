@@ -5,9 +5,9 @@ before:
     - go mod tidy
 
 builds:
-  - id: orchestrAIgent
+  - id: orchestragent-mcp
     main: ./cmd/server
-    binary: orchestrAIgent
+    binary: orchestragent-mcp
     env:
       - CGO_ENABLED=0
     goos:
@@ -64,6 +64,6 @@ changelog:
 release:
   github:
     owner: tzDel
-    name: orchestrAIgent
+    name: orchestragent-mcp
   draft: false
   prerelease: auto
