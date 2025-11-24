@@ -29,5 +29,9 @@ config.yaml
 .claude/mcp.json
 .claude/*.local.json
 
+# Codex
+/.codex/AGENTS.md
+
 # Worktrees
 .worktrees/
+/.mcp.json
