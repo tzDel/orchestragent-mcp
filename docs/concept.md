@@ -30,7 +30,6 @@ This MCP server solves these problems by giving each agent an isolated git workt
 - Spawn/monitor/terminate agent processes
 - IDE plugin integration (VSCode/IntelliJ)
 - CLI tool (`orchestraigent` command)
-- Merge automation with conflict handling
 - Persistence, logging, multi-repo support
 
 ---
