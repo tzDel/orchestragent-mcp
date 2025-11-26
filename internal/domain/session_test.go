@@ -4,7 +4,9 @@ import "testing"
 
 func TestNewSession(t *testing.T) {
 	// arrange
-	sessionID, _ := NewSessionID("test-session")
+	expectedSessionID := "test-session"
+	expectedBranchName := "orchestragent-test-session"
+	sessionID, _ := NewSessionID(expectedSessionID)
 	worktreePath := "/path/to/worktree"
 
 	// act
@@ -15,8 +17,8 @@ func TestNewSession(t *testing.T) {
 		t.Fatalf("NewSession() unexpected error: %v", err)
 	}
 
-	if session.ID().String() != "test-session" {
-		t.Errorf("ID() = %q, want %q", session.ID().String(), "test-session")
+	if session.ID().String() != expectedSessionID {
+		t.Errorf("ID() = %q, want %q", session.ID().String(), expectedSessionID)
 	}
 
 	if session.Status() != StatusOpen {
@@ -27,8 +29,8 @@ func TestNewSession(t *testing.T) {
 		t.Errorf("WorktreePath() = %q, want %q", session.WorktreePath(), worktreePath)
 	}
 
-	if session.BranchName() != "orchestragent-test-session" {
-		t.Errorf("BranchName() = %q, want %q", session.BranchName(), "orchestragent-test-session")
+	if session.BranchName() != expectedBranchName {
+		t.Errorf("BranchName() = %q, want %q", session.BranchName(), expectedBranchName)
 	}
 }
 

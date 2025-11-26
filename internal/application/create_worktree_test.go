@@ -9,12 +9,25 @@ import (
 	"github.com/tzDel/orchestragent-mcp/internal/domain"
 )
 
+const testRepositoryRoot = "/repo/root"
+
+func setupCreateWorktreeUseCase(gitOps *mockGitOperations) (*CreateWorktreeUseCase, *mockSessionRepository) {
+	if gitOps == nil {
+		gitOps = &mockGitOperations{}
+	}
+
+	sessionRepository := newMockSessionRepository()
+	useCase := NewCreateWorktreeUseCase(gitOps, sessionRepository, testRepositoryRoot)
+	return useCase, sessionRepository
+}
+
 func TestCreateWorktreeUseCase_Execute_Success(t *testing.T) {
 	// arrange
-	gitOperations := &mockGitOperations{}
-	sessionRepository := newMockSessionRepository()
-	createWorktreeUseCase := NewCreateWorktreeUseCase(gitOperations, sessionRepository, "/repo/root")
-	request := CreateWorktreeRequest{SessionID: "test-session"}
+	createWorktreeUseCase, _ := setupCreateWorktreeUseCase(nil)
+	expectedSessionID := "test-session"
+	expectedBranchName := "orchestragent-test-session"
+	expectedStatus := "open"
+	request := CreateWorktreeRequest{SessionID: expectedSessionID}
 	ctx := context.Background()
 
 	// act
@@ -25,24 +38,22 @@ func TestCreateWorktreeUseCase_Execute_Success(t *testing.T) {
 		t.Fatalf("Execute() error: %v", err)
 	}
 
-	if response.SessionID != "test-session" {
-		t.Errorf("SessionID = %q, want %q", response.SessionID, "test-session")
+	if response.SessionID != expectedSessionID {
+		t.Errorf("SessionID = %q, want %q", response.SessionID, expectedSessionID)
 	}
 
-	if response.BranchName != "orchestragent-test-session" {
-		t.Errorf("BranchName = %q, want %q", response.BranchName, "orchestragent-test-session")
+	if response.BranchName != expectedBranchName {
+		t.Errorf("BranchName = %q, want %q", response.BranchName, expectedBranchName)
 	}
 
-	if response.Status != "open" {
-		t.Errorf("Status = %q, want %q", response.Status, "open")
+	if response.Status != expectedStatus {
+		t.Errorf("Status = %q, want %q", response.Status, expectedStatus)
 	}
 }
 
 func TestCreateWorktreeUseCase_Execute_InvalidSessionID(t *testing.T) {
 	// arrange
-	gitOperations := &mockGitOperations{}
-	sessionRepository := newMockSessionRepository()
-	createWorktreeUseCase := NewCreateWorktreeUseCase(gitOperations, sessionRepository, "/repo/root")
+	createWorktreeUseCase, _ := setupCreateWorktreeUseCase(nil)
 	request := CreateWorktreeRequest{SessionID: "Invalid_ID"}
 	ctx := context.Background()
 
@@ -57,9 +68,7 @@ func TestCreateWorktreeUseCase_Execute_InvalidSessionID(t *testing.T) {
 
 func TestCreateWorktreeUseCase_Execute_SessionAlreadyExists(t *testing.T) {
 	// arrange
-	gitOperations := &mockGitOperations{}
-	sessionRepository := newMockSessionRepository()
-	createWorktreeUseCase := NewCreateWorktreeUseCase(gitOperations, sessionRepository, "/repo/root")
+	createWorktreeUseCase, sessionRepository := setupCreateWorktreeUseCase(nil)
 
 	sessionID, _ := domain.NewSessionID("test-session")
 	session, _ := domain.NewSession(sessionID, "/path")
@@ -84,8 +93,7 @@ func TestCreateWorktreeUseCase_Execute_BranchAlreadyExists(t *testing.T) {
 			return true, nil
 		},
 	}
-	sessionRepository := newMockSessionRepository()
-	createWorktreeUseCase := NewCreateWorktreeUseCase(gitOperations, sessionRepository, "/repo/root")
+	createWorktreeUseCase, _ := setupCreateWorktreeUseCase(gitOperations)
 	request := CreateWorktreeRequest{SessionID: "test-session"}
 	ctx := context.Background()
 
@@ -105,8 +113,7 @@ func TestCreateWorktreeUseCase_Execute_GitOperationFails(t *testing.T) {
 			return errors.New("git error")
 		},
 	}
-	sessionRepository := newMockSessionRepository()
-	createWorktreeUseCase := NewCreateWorktreeUseCase(gitOperations, sessionRepository, "/repo/root")
+	createWorktreeUseCase, _ := setupCreateWorktreeUseCase(gitOperations)
 	request := CreateWorktreeRequest{SessionID: "test-session"}
 	ctx := context.Background()
 
@@ -121,9 +128,7 @@ func TestCreateWorktreeUseCase_Execute_GitOperationFails(t *testing.T) {
 
 func TestCreateWorktreeUseCase_ValidateSessionID_WithValidID_ReturnsSessionID(t *testing.T) {
 	// arrange
-	gitOperations := &mockGitOperations{}
-	sessionRepository := newMockSessionRepository()
-	createWorktreeUseCase := NewCreateWorktreeUseCase(gitOperations, sessionRepository, "/repo/root")
+	createWorktreeUseCase, _ := setupCreateWorktreeUseCase(nil)
 	validIDString := "test-session"
 
 	// act
@@ -140,9 +145,7 @@ func TestCreateWorktreeUseCase_ValidateSessionID_WithValidID_ReturnsSessionID(t 
 
 func TestCreateWorktreeUseCase_ValidateSessionID_WithInvalidID_ReturnsError(t *testing.T) {
 	// arrange
-	gitOperations := &mockGitOperations{}
-	sessionRepository := newMockSessionRepository()
-	createWorktreeUseCase := NewCreateWorktreeUseCase(gitOperations, sessionRepository, "/repo/root")
+	createWorktreeUseCase, _ := setupCreateWorktreeUseCase(nil)
 	invalidIDString := "Invalid_ID"
 
 	// act
@@ -156,9 +159,7 @@ func TestCreateWorktreeUseCase_ValidateSessionID_WithInvalidID_ReturnsError(t *t
 
 func TestCreateWorktreeUseCase_EnsureSessionDoesNotExist_WhenSessionDoesNotExist_ReturnsNoError(t *testing.T) {
 	// arrange
-	gitOperations := &mockGitOperations{}
-	sessionRepository := newMockSessionRepository()
-	createWorktreeUseCase := NewCreateWorktreeUseCase(gitOperations, sessionRepository, "/repo/root")
+	createWorktreeUseCase, _ := setupCreateWorktreeUseCase(nil)
 	sessionID, _ := domain.NewSessionID("test-session")
 	ctx := context.Background()
 
@@ -173,9 +174,7 @@ func TestCreateWorktreeUseCase_EnsureSessionDoesNotExist_WhenSessionDoesNotExist
 
 func TestCreateWorktreeUseCase_EnsureSessionDoesNotExist_WhenSessionExists_ReturnsError(t *testing.T) {
 	// arrange
-	gitOperations := &mockGitOperations{}
-	sessionRepository := newMockSessionRepository()
-	createWorktreeUseCase := NewCreateWorktreeUseCase(gitOperations, sessionRepository, "/repo/root")
+	createWorktreeUseCase, sessionRepository := setupCreateWorktreeUseCase(nil)
 	sessionID, _ := domain.NewSessionID("test-session")
 	session, _ := domain.NewSession(sessionID, "/path")
 	sessionRepository.Save(context.Background(), session)
@@ -197,9 +196,8 @@ func TestCreateWorktreeUseCase_EnsureBranchDoesNotExist_WhenBranchDoesNotExist_R
 			return false, nil
 		},
 	}
-	sessionRepository := newMockSessionRepository()
-	createWorktreeUseCase := NewCreateWorktreeUseCase(gitOperations, sessionRepository, "/repo/root")
-	branchName := "session-test-session"
+	createWorktreeUseCase, _ := setupCreateWorktreeUseCase(gitOperations)
+	branchName := "orchestragent-test-session"
 	ctx := context.Background()
 
 	// act
@@ -218,9 +216,8 @@ func TestCreateWorktreeUseCase_EnsureBranchDoesNotExist_WhenBranchExists_Returns
 			return true, nil
 		},
 	}
-	sessionRepository := newMockSessionRepository()
-	createWorktreeUseCase := NewCreateWorktreeUseCase(gitOperations, sessionRepository, "/repo/root")
-	branchName := "session-test-session"
+	createWorktreeUseCase, _ := setupCreateWorktreeUseCase(gitOperations)
+	branchName := "orchestragent-test-session"
 	ctx := context.Background()
 
 	// act
@@ -234,16 +231,15 @@ func TestCreateWorktreeUseCase_EnsureBranchDoesNotExist_WhenBranchExists_Returns
 
 func TestCreateWorktreeUseCase_BuildWorktreePath_ReturnsCorrectPath(t *testing.T) {
 	// arrange
-	gitOperations := &mockGitOperations{}
-	sessionRepository := newMockSessionRepository()
-	createWorktreeUseCase := NewCreateWorktreeUseCase(gitOperations, sessionRepository, "/repo/root")
+	createWorktreeUseCase, _ := setupCreateWorktreeUseCase(nil)
 	sessionID, _ := domain.NewSessionID("test-session")
+	expectedWorktreeDirName := "orchestragent-test-session"
+	expectedPath := filepath.Join("/repo/root", ".worktrees", expectedWorktreeDirName)
 
 	// act
 	worktreePath := createWorktreeUseCase.buildWorktreePath(sessionID)
 
 	// assert
-	expectedPath := filepath.Join("/repo/root", ".worktrees", "orchestragent-test-session")
 	if worktreePath != expectedPath {
 		t.Errorf("buildWorktreePath() returned %q, want %q", worktreePath, expectedPath)
 	}
@@ -251,11 +247,9 @@ func TestCreateWorktreeUseCase_BuildWorktreePath_ReturnsCorrectPath(t *testing.T
 
 func TestCreateWorktreeUseCase_CreateWorktreeAndBranch_Success_ReturnsNoError(t *testing.T) {
 	// arrange
-	gitOperations := &mockGitOperations{}
-	sessionRepository := newMockSessionRepository()
-	createWorktreeUseCase := NewCreateWorktreeUseCase(gitOperations, sessionRepository, "/repo/root")
-	worktreePath := "/repo/root/.worktrees/session-test-session"
-	branchName := "session-test-session"
+	createWorktreeUseCase, _ := setupCreateWorktreeUseCase(nil)
+	worktreePath := "/repo/root/.worktrees/orchestragent-test-session"
+	branchName := "orchestragent-test-session"
 	ctx := context.Background()
 
 	// act
@@ -274,10 +268,9 @@ func TestCreateWorktreeUseCase_CreateWorktreeAndBranch_GitOperationFails_Returns
 			return errors.New("git error")
 		},
 	}
-	sessionRepository := newMockSessionRepository()
-	createWorktreeUseCase := NewCreateWorktreeUseCase(gitOperations, sessionRepository, "/repo/root")
-	worktreePath := "/repo/root/.worktrees/session-test-session"
-	branchName := "session-test-session"
+	createWorktreeUseCase, _ := setupCreateWorktreeUseCase(gitOperations)
+	worktreePath := "/repo/root/.worktrees/orchestragent-test-session"
+	branchName := "orchestragent-test-session"
 	ctx := context.Background()
 
 	// act
@@ -291,11 +284,10 @@ func TestCreateWorktreeUseCase_CreateWorktreeAndBranch_GitOperationFails_Returns
 
 func TestCreateWorktreeUseCase_CreateAndSaveSession_Success_ReturnsSession(t *testing.T) {
 	// arrange
-	gitOperations := &mockGitOperations{}
-	sessionRepository := newMockSessionRepository()
-	createWorktreeUseCase := NewCreateWorktreeUseCase(gitOperations, sessionRepository, "/repo/root")
-	sessionID, _ := domain.NewSessionID("test-session")
-	worktreePath := "/repo/root/.worktrees/session-test-session"
+	createWorktreeUseCase, _ := setupCreateWorktreeUseCase(nil)
+	expectedSessionID := "test-session"
+	sessionID, _ := domain.NewSessionID(expectedSessionID)
+	worktreePath := "/repo/root/.worktrees/orchestragent-test-session"
 	ctx := context.Background()
 
 	// act
@@ -305,8 +297,8 @@ func TestCreateWorktreeUseCase_CreateAndSaveSession_Success_ReturnsSession(t *te
 	if err != nil {
 		t.Fatalf("createAndSaveSession() unexpected error: %v", err)
 	}
-	if session.ID().String() != "test-session" {
-		t.Errorf("createAndSaveSession() session ID = %q, want %q", session.ID().String(), "test-session")
+	if session.ID().String() != expectedSessionID {
+		t.Errorf("createAndSaveSession() session ID = %q, want %q", session.ID().String(), expectedSessionID)
 	}
 	if session.WorktreePath() != worktreePath {
 		t.Errorf("createAndSaveSession() worktree path = %q, want %q", session.WorktreePath(), worktreePath)
@@ -315,23 +307,24 @@ func TestCreateWorktreeUseCase_CreateAndSaveSession_Success_ReturnsSession(t *te
 
 func TestCreateWorktreeUseCase_BuildResponse_ReturnsCorrectResponse(t *testing.T) {
 	// arrange
-	gitOperations := &mockGitOperations{}
-	sessionRepository := newMockSessionRepository()
-	createWorktreeUseCase := NewCreateWorktreeUseCase(gitOperations, sessionRepository, "/repo/root")
-	sessionID, _ := domain.NewSessionID("test-session")
+	createWorktreeUseCase, _ := setupCreateWorktreeUseCase(nil)
+	expectedSessionID := "test-session"
+	expectedBranchName := "orchestragent-test-session"
+	expectedStatus := "open"
+	sessionID, _ := domain.NewSessionID(expectedSessionID)
 	session, _ := domain.NewSession(sessionID, "/repo/root/.worktrees/orchestragent-test-session")
 
 	// act
 	response := createWorktreeUseCase.buildResponse(session)
 
 	// assert
-	if response.SessionID != "test-session" {
-		t.Errorf("buildResponse() SessionID = %q, want %q", response.SessionID, "test-session")
+	if response.SessionID != expectedSessionID {
+		t.Errorf("buildResponse() SessionID = %q, want %q", response.SessionID, expectedSessionID)
 	}
-	if response.BranchName != "orchestragent-test-session" {
-		t.Errorf("buildResponse() BranchName = %q, want %q", response.BranchName, "orchestragent-test-session")
+	if response.BranchName != expectedBranchName {
+		t.Errorf("buildResponse() BranchName = %q, want %q", response.BranchName, expectedBranchName)
 	}
-	if response.Status != "open" {
-		t.Errorf("buildResponse() Status = %q, want %q", response.Status, "open")
+	if response.Status != expectedStatus {
+		t.Errorf("buildResponse() Status = %q, want %q", response.Status, expectedStatus)
 	}
 }

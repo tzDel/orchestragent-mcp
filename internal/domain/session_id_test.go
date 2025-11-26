@@ -53,13 +53,13 @@ func TestNewSessionID_Invalid(t *testing.T) {
 func TestSessionID_BranchName(t *testing.T) {
 	// arrange
 	sessionID, _ := NewSessionID("copilot-123")
-	expected := "orchestragent-copilot-123"
+	expectedBranchName := "orchestragent-copilot-123"
 
 	// act
 	result := sessionID.BranchName()
 
 	// assert
-	if result != expected {
-		t.Errorf("BranchName() = %q, want %q", result, expected)
+	if result != expectedBranchName {
+		t.Errorf("BranchName() = %q, want %q", result, expectedBranchName)
 	}
 }
